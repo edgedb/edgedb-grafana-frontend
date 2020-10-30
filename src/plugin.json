@@ -1,0 +1,37 @@
+{
+  "type": "datasource",
+  "name": "edgedb-frontend",
+  "id": "edgedb-edgedb-frontend",
+  "metrics": true,
+  "info": {
+    "description": "Simple EdgeDB querying",
+    "author": {
+      "name": "Łukasz Langa",
+      "url": "https://edgedb.com/"
+    },
+    "keywords": [
+      "edgedb edgeql"
+    ],
+    "logos": {
+      "small": "img/logo.svg",
+      "large": "img/logo.svg"
+    },
+    "links": [
+      {
+        "name": "Website",
+        "url": "https://github.com/grafana/simple-datasource"
+      },
+      {
+        "name": "License",
+        "url": "https://github.com/grafana/simple-datasource/blob/master/LICENSE"
+      }
+    ],
+    "screenshots": [],
+    "version": "%VERSION%",
+    "updated": "%TODAY%"
+  },
+  "dependencies": {
+    "grafanaVersion": "6.5.x",
+    "plugins": []
+  }
+}
