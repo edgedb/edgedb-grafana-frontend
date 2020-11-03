@@ -10,49 +10,38 @@ import {
   FieldType,
 } from '@grafana/data';
 
-import { MyQuery, MyDataSourceOptions, defaultQuery } from './types';
+import { EdgeDBQuery, EdgeDBDataSourceOptions, defaultQuery } from './types';
 
-export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
-  resolution: number;
+export class DataSource extends DataSourceApi<EdgeDBQuery, EdgeDBDataSourceOptions> {
+  uri?: string;
 
-  constructor(instanceSettings: DataSourceInstanceSettings<MyDataSourceOptions>) {
+  constructor(instanceSettings: DataSourceInstanceSettings<EdgeDBDataSourceOptions>) {
     super(instanceSettings);
-    this.resolution = instanceSettings.jsonData.resolution || 1000.0;
+    this.uri = instanceSettings.jsonData.uri;
   }
 
-  async query(options: DataQueryRequest<MyQuery>): Promise<DataQueryResponse> {
+  async query(options: DataQueryRequest<EdgeDBQuery>): Promise<DataQueryResponse> {
     const { range } = options;
     const from = range!.from.valueOf();
     const to = range!.to.valueOf();
 
-    // duration of the time range, in milliseconds.
-    const duration = to - from;
-
-    // step determines how close in time (ms) the points will be to each other.
-    const step = duration / this.resolution;
-
-    // Return a constant for each query.
     const data = options.targets.map(target => {
       const query = defaults(target, defaultQuery);
       const frame = new MutableDataFrame({
         refId: query.refId,
         fields: [
-          // { name: 'Time', values: [from, to], type: FieldType.time },
-          // { name: 'Value', values: [query.constant, query.constant], type: FieldType.number },
           { name: 'time', type: FieldType.time },
-          { name: 'value', type: FieldType.number },
+          { name: 'value', type: query.valueType },
         ],
       });
       if (query.queryText) {
-        this.doRequest(query).then(response => {
-          response.data.forEach((point: any) => {
-            frame.appendRow([point.time, point.value]);
+        this.doRequest(query.queryText).then(response => {
+          response.data.data.forEach((point: any) => {
+            if (point.time >= from && point.time <= to) {
+              frame.appendRow([point.time, point.value]);
+            }
           });
         });
-      } else {
-        for (let t = 0; t < duration; t += step) {
-          frame.add({ time: from + t, value: Math.sin((2 * query.frequency * Math.PI * t) / duration) });
-        }
       }
       return frame;
     });
@@ -61,20 +50,31 @@ export class DataSource extends DataSourceApi<MyQuery, MyDataSourceOptions> {
   }
 
   async testDatasource() {
-    // Implement a health check for your data source.
-    return {
-      status: 'success',
-      message: 'Success',
+    var result = {
+      status: 'error',
+      message: 'Cannot connect, check the URI in configuration',
     };
+    if (this.uri) {
+      const response = await this.doRequest('SELECT 1;');
+      response.data.data.forEach((obj: any) => {
+        if (obj === 1) {
+          result.status = 'success';
+          result.message = 'Connected successfully!';
+        }
+      });
+    }
+    return result;
   }
 
-  async doRequest(query: MyQuery) {
-    const result = await getBackendSrv().datasourceRequest({
-      method: 'GET',
-      url: 'http://127.0.0.1:8888',
-      params: query.queryText,
-    });
+  async doRequest(queryText: string) {
+    if (!this.uri) {
+      return { data: [] };
+    }
 
-    return result;
+    return await getBackendSrv().datasourceRequest({
+      method: 'GET',
+      url: this.uri,
+      params: { query: queryText },
+    });
   }
 }

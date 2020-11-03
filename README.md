@@ -1,11 +1,7 @@
-# Grafana Data Source Plugin Template
+# EdgeDB Data Source Plugin for Grafana
 
-[![CircleCI](https://circleci.com/gh/grafana/simple-datasource/tree/master.svg?style=svg)](https://circleci.com/gh/grafana/simple-datasource/tree/master)
-
-This template is a starting point for building Grafana Data Source Plugins
-
-## What is Grafana Data Source Plugin?
-Grafana supports a wide range of data sources, including Prometheus, MySQL, and even Datadog. There’s a good chance you can already visualize metrics from the systems you have set up. In some cases, though, you already have an in-house metrics solution that you’d like to add to your Grafana dashboards. Grafana Data Source Plugins enables integrating such solutions with Grafana.
+Grafana supports a wide range of data sources, including Prometheus, MySQL, and
+now also EdgeDB. 
 
 ## Getting started
 1. Install dependencies
@@ -25,8 +21,26 @@ yarn watch
 yarn build
 ```
 
+4. In Grafana, go to Configuration / Data Sources and "Add data source".
+
+5. In the plugin setup, fill out the URI with the HTTP port's endpoint
+   to your database.  Grafana will test the connection on save.
+
+## Tips for building EdgeDB queries
+1. Make sure your query returns a set in the following shape:
+
+   {
+     Object {time: <int>, value: <value-type>},
+     Object {time: <int>, value: <value-type>},
+     ...
+   }
+   
+2. Make sure the values in the `time` field are epoch milliseconds.
+
 ## Learn more
-- [Build a data source plugin tutorial](https://grafana.com/tutorials/build-a-data-source-plugin)
+- [EdgeDB documentation](https://edgedb.com/docs/)
 - [Grafana documentation](https://grafana.com/docs/)
-- [Grafana Tutorials](https://grafana.com/tutorials/) - Grafana Tutorials are step-by-step guides that help you make the most of Grafana
-- [Grafana UI Library](https://developers.grafana.com/ui) - UI components to help you build interfaces using Grafana Design System
+- [Grafana UI Library](https://developers.grafana.com/ui) - UI components to
+  help you build interfaces using Grafana Design System
+- [Build a data source plugin
+  tutorial](https://grafana.com/tutorials/build-a-data-source-plugin)

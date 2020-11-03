@@ -1,27 +1,18 @@
-import { DataQuery, DataSourceJsonData } from '@grafana/data';
+import { DataQuery, DataSourceJsonData, FieldType } from '@grafana/data';
 
-export interface MyQuery extends DataQuery {
+export interface EdgeDBQuery extends DataQuery {
   queryText?: string;
-  constant: number;
-  frequency: number;
+  valueType: FieldType;
 }
 
-export const defaultQuery: Partial<MyQuery> = {
-  constant: 6.5,
-  frequency: 1.0,
+export const defaultQuery: Partial<EdgeDBQuery> = {
+  queryText: 'SELECT { time := 0, value := 0 };',
+  valueType: FieldType.number,
 };
 
 /**
  * These are options configured for each DataSource instance
  */
-export interface MyDataSourceOptions extends DataSourceJsonData {
-  path?: string;
-  resolution?: number;
-}
-
-/**
- * Value that is used in the backend, but never sent over HTTP to the frontend
- */
-export interface MySecureJsonData {
-  apiKey?: string;
+export interface EdgeDBDataSourceOptions extends DataSourceJsonData {
+  uri?: string;
 }
