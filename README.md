@@ -28,12 +28,14 @@ yarn build
 
 ## Tips for building EdgeDB queries
 1. Make sure your query returns a set in the following shape:
-
+   
+   ```
    {
      Object {time: <int>, value: <value-type>},
      Object {time: <int>, value: <value-type>},
      ...
    }
+   ```
    
 2. Make sure the values in the `time` field are epoch milliseconds.
 
