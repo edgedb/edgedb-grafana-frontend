@@ -6,7 +6,7 @@ export interface EdgeDBQuery extends DataQuery {
 }
 
 export const defaultQuery: Partial<EdgeDBQuery> = {
-  queryText: 'SELECT { time := 0, value := 0 };',
+  queryText: 'SELECT { time := <int64>$from, value := 0 } FILTER <int64>$from <= .time AND .time <= <int64>$to;',
   valueType: FieldType.number,
 };
 

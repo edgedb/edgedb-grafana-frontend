@@ -39,6 +39,10 @@ yarn build
    
 2. Make sure the values in the `time` field are epoch milliseconds.
 
+3. If your data source grows in time, filter your query with an expression
+   like `FILTER <int64>$from <= .time AND .time <= <int64>$to`.  The
+   variables `from` and `to` are provided by the Grafana plugin.
+
 ## Learn more
 - [EdgeDB documentation](https://edgedb.com/docs/)
 - [Grafana documentation](https://grafana.com/docs/)

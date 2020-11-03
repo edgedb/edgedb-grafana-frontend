@@ -35,12 +35,15 @@ export class DataSource extends DataSourceApi<EdgeDBQuery, EdgeDBDataSourceOptio
         ],
       });
       if (query.queryText) {
-        this.doRequest(query.queryText).then(response => {
-          response.data.data.forEach((point: any) => {
-            if (point.time >= from && point.time <= to) {
-              frame.appendRow([point.time, point.value]);
-            }
-          });
+        this.doRequest(query.queryText, from, to).then(response => {
+          if (Object.keys(response.data).includes('data')) {
+            const objects = response.data as { data: any[] };
+            objects.data.forEach((point: any) => {
+              if (point.time >= from && point.time <= to) {
+                frame.appendRow([point.time, point.value]);
+              }
+            });
+          }
         });
       }
       return frame;
@@ -55,26 +58,31 @@ export class DataSource extends DataSourceApi<EdgeDBQuery, EdgeDBDataSourceOptio
       message: 'Cannot connect, check the URI in configuration',
     };
     if (this.uri) {
-      const response = await this.doRequest('SELECT 1;');
-      response.data.data.forEach((obj: any) => {
-        if (obj === 1) {
-          result.status = 'success';
-          result.message = 'Connected successfully!';
-        }
-      });
+      const response = await this.doRequest('SELECT 1;', 0, 0);
+      if (Object.keys(response.data).includes('data')) {
+        const objects = response.data as { data: any[] };
+        objects.data.forEach((obj: any) => {
+          if (obj === 1) {
+            result.status = 'success';
+            result.message = 'Connected successfully!';
+          }
+        });
+      }
     }
     return result;
   }
 
-  async doRequest(queryText: string) {
+  async doRequest(queryText: string, from: number, to: number) {
     if (!this.uri) {
       return { data: [] };
     }
 
-    return await getBackendSrv().datasourceRequest({
-      method: 'GET',
-      url: this.uri,
-      params: { query: queryText },
-    });
+    return getBackendSrv()
+      .fetch<DataQueryResponse>({
+        method: 'GET',
+        url: this.uri,
+        params: { query: queryText, variables: JSON.stringify({ from: from, to: to }) },
+      })
+      .toPromise();
   }
 }
